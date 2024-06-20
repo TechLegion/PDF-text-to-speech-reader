@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Upload PDF Document{% endblock %}
+
+{% block content %}
+    <h1>Upload Your PDF</h1>
+    <p>Choose a PDF file from your device and click "Upload" to convert it to spoken text.</p>
+
+    <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="saveFormState()">
+        <input class="upload-input" type="file" name="pdf" accept=".pdf">
+        <br>
+        <button class="upload-btn" type="submit">Upload</button>
+    </form>
+
+    <div id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div id="result">
+        {% if speech_file %}
+            <audio id="speechFile" controls>
+                <source src="{{ url_for('static', filename='mp3files/' + speech_file)}}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        {% else %}
+            <p>No speech file available</p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Restore file path from sessionStorage if available
+            const speechFilePath = sessionStorage.getItem("speech_file");
+            if (speechFilePath) {
+                const audio = document.getElementById("speechFile");
+                audio.src = speechFilePath;
+                audio.style.display = "block";
+            }
+
+            // Restore flash message
+            const flashMessage = sessionStorage.getItem("flash_message");
+            const flashClass = sessionStorage.getItem("flash_class");
+            if (flashMessage && flashClass) {
+                const flashDiv = document.createElement("div");
+                flashDiv.className = `alert alert-${flashClass}`;
+                flashDiv.innerText = flashMessage;
+                document.getElementById("flash-messages").appendChild(flashDiv);
+                sessionStorage.removeItem("flash_message");
+                sessionStorage.removeItem("flash_class");
+            }
+        });
+
+        function saveFormState() {
+            // Placeholder message to indicate processing
+            sessionStorage.setItem("flash_message", "Processing your file...");
+            sessionStorage.setItem("flash_class", "info");
+        }
+
+        // Save the speech file path and flash message if available
+        {% if speech_file %}
+            const speechFilePath = "{{ url_for('static', filename='mp3files/' + speech_file) }}";
+            sessionStorage.setItem("speech_file", speechFilePath);
+            sessionStorage.setItem("flash_message", 'File "{{ speech_file }}" successfully uploaded and converted to speech.');
+            sessionStorage.setItem("flash_class", "success");
+        {% endif %}
+    </script>
+{% endblock %}
