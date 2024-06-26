@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, flash, url_for
+from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 import os
 from gtts import gTTS
@@ -44,6 +45,9 @@ def allowed_file(filename):
 def text_to_speech(text, output_file):
     tts = gTTS(text=text, lang='en')
     tts.save(output_file)
+
+
+client = MongoClient("mongodb://localhost:27017/")
 
 
 # Route to render the home page
@@ -143,4 +147,4 @@ def helps():
 
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0')

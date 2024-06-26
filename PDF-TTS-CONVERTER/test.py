@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, url_for
 from werkzeug.utils import secure_filename
-import os
-import tempfile
+from pymongo import MongoClient
 from gtts import gTTS
 import PyPDF2
+import os
 
-
+# Function to extract text from a PDF file
 def extract_text_from_pdf(pdf_path):
     text = ""
     try:
@@ -18,64 +18,91 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 
+# Initialize Flask application
+app = Flask(__name__)
+app.secret_key = b"NL[\xdb,\xb1\x80z\x94\xda\xe2\x99'~7\xda\xf8\x83\xc7\t\x15\x15\xf1<"
+
+
+# Configure allowed file extensions
+app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
+
+
+# Function to check if the file extension is allowed
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
+# Function to convert text to speech and save as an MP3 file
 def text_to_speech(text, output_file):
     tts = gTTS(text=text, lang='en')
     tts.save(output_file)
 
 
-app = Flask(__name__)
+# Database connection
+client = MongoClient("mongodb://localhost:27017/")
+db = client['your_database']
+collection = db['uploads']
 
-app.secret_key = b"NL[\xdb,\xb1\x80z\x94\xda\xe2\x99'~7\xda\xf8\x83\xc7\t\x15\x15\xf1<"
-app.config['UPLOAD_FOLDER'] = 'uploaded_files'  # Specify your upload folder
-app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
 
-
+# Route to render the home page
 @app.route('/')
 def home():
     return render_template('index.html')
 
 
+# Route to handle file upload and conversion
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         if 'pdf' not in request.files:
-            return 'No file part, Select PDF file only'
+            flash('No file part, please select a PDF file.', 'error')
+            return redirect(request.url)
 
         file = request.files['pdf']
         if file.filename == '':
-            return 'No selected file'
+            flash('No selected file. Please choose a PDF file.', 'error')
+            return redirect(request.url)
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            save_filename = filename.split('.')[0]
-            text = extract_text_from_pdf(file_path)
-            speech_file_path = "mp3files/" + save_filename + ".mp3"
-            text_to_speech(text, speech_file_path)
+            try:
+                filename = secure_filename(file.filename)
+                file_data = file.read()
+                collection.insert_one({"filename": filename, "file_data": file_data})
+                print("File has been saved to the database")
 
-            return redirect('/')
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                with open(file_path, 'wb') as f:
+                    f.write(file_data)
+
+                save_filename = os.path.splitext(filename)[0]
+                speech_file = f'{save_filename}.mp3'
+                speech_file_path = os.path.join('static', 'mp3files', speech_file)
+                text = extract_text_from_pdf(file_path)
+                text_to_speech(text, speech_file_path)
+                os.remove(file_path)
+                print("Text extracted and converted to speech")
+
+                flash(f'File "{filename}" successfully uploaded and converted to "{speech_file}".', 'success')
+                return render_template('upload.html', speech_file=speech_file)
+
+            except Exception as e:
+                flash(f'Error processing file: {e}', 'error')
+                return redirect(request.url)
+
         else:
-            flash("Please select Acceptable file type (.pdf)")
+            flash('Please select an acceptable file type (.pdf).', 'error')
             return redirect(request.url)
 
     return render_template('upload.html')
 
-
 @app.route('/about')
 def about():
-    flash("WELCOME TO ABOUT PAGE", "success")
     return render_template('about.html')
 
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        # Handle form submission (e.g., save data to database or send email)
         return redirect("/")
 
     return render_template('contact.html')
@@ -97,4 +124,4 @@ def helps():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0')
