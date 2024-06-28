@@ -108,7 +108,7 @@ def upload_file():
 
         else:
             # Flash error message if the file type is not allowed
-            flash('Please select an acceptable file type (.pdf).', 'error')
+            flash('Please select the acceptable file type (.pdf). You selected a wrong file format', 'error')
             return redirect(request.url)
 
     return render_template('upload.html')
