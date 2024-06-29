@@ -4,8 +4,9 @@ from werkzeug.utils import secure_filename
 import os
 from gtts import gTTS
 import PyPDF2
-
 # Function to extract text from a PDF file
+
+
 def extract_text_from_pdf(pdf_path):
     text = ""
     try:
@@ -16,6 +17,7 @@ def extract_text_from_pdf(pdf_path):
     except Exception as e:
         print("Error:", e)
     return text
+
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -34,13 +36,17 @@ if not os.path.exists('static/mp3files'):
     os.makedirs('static/mp3files')
 
 # Function to check if the file extension is allowed
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
 
 # Function to convert text to speech and save as an MP3 file
 def text_to_speech(text, output_file):
     tts = gTTS(text=text, lang='en')
     tts.save(output_file)
+
 
 # Limit the text length to approximately fit a 5-minute audio duration
 def limit_text_length(text, max_duration_minutes=5):
@@ -48,7 +54,9 @@ def limit_text_length(text, max_duration_minutes=5):
     max_words = words_per_minute * max_duration_minutes
     return ' '.join(text.split()[:max_words])
 
+
 client = MongoClient("mongodb://localhost:27017/")
+
 
 # Route to render the home page
 @app.route('/')
@@ -56,6 +64,8 @@ def home():
     return render_template('index.html')
 
 # Route to handle file upload and conversion
+
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -113,10 +123,12 @@ def upload_file():
 
     return render_template('upload.html')
 
+
 # Route to render the about page
 @app.route('/about')
 def about():
     return render_template('about.html')
+
 
 # Route to handle contact form and render the contact page
 @app.route('/contact', methods=['GET', 'POST'])
@@ -127,20 +139,24 @@ def contact():
 
     return render_template('contact.html')
 
+
 # Route to render the terms of service page
 @app.route('/terms')
 def terms():
     return render_template('TOS.html')
+
 
 # Route to render the privacy policy page
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')
 
+
 # Route to render the help page
 @app.route('/help')
 def helps():
     return render_template('help.html')
+
 
 # Run the Flask application
 if __name__ == '__main__':
