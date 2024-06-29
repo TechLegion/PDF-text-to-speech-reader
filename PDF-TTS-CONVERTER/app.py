@@ -107,7 +107,7 @@ def upload_file():
                 print("Text extracted and converted to speech")
 
                 # Flash success message and render the upload template with the path to the speech file
-                flash(f'File "{filename}" successfully uploaded and converted to "{speech_file}".', 'success')
+                flash(f'"{filename}" successfully uploaded', 'success')
 
                 return render_template('upload.html', speech_file=speech_file)
 
