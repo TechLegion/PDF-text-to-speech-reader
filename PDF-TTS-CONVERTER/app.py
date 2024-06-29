@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 import os
@@ -42,10 +42,10 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
+print(app.config['ALLOWED_EXTENSIONS'])
+
+
 # Function to convert text to speech and save as an MP3 file
-def text_to_speech(text, output_file):
-    tts = gTTS(text=text, lang='en')
-    tts.save(output_file)
 
 
 # Limit the text length to approximately fit a 5-minute audio duration
@@ -69,6 +69,7 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        voice = request.form['voice']
         # Check if the post request has the file part
         if 'pdf' not in request.files:
             flash('No file part, please select a PDF file.', 'error')
@@ -101,7 +102,9 @@ def upload_file():
                 limited_text = limit_text_length(text)
 
                 # Convert limited text to speech
-                text_to_speech(limited_text, speech_file_path)
+                tts = gTTS(text=limited_text, lang=voice)
+                tts.save(speech_file_path)
+
                 print("This is the speech file path " + speech_file_path)
                 print(f"This is what you have in url_for on upload.html 'static/mp3files/{speech_file_path.split('/')[-1]}")
                 print("Text extracted and converted to speech")
