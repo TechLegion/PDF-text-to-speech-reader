@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, redirect, flash
-from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 import os
 from gtts import gTTS
 import PyPDF2
+
+
 # Function to extract text from a PDF file
-
-
 def extract_text_from_pdf(pdf_path):
     text = ""
     try:
@@ -35,27 +34,17 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 if not os.path.exists('static/mp3files'):
     os.makedirs('static/mp3files')
 
+
 # Function to check if the file extension is allowed
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-print(app.config['ALLOWED_EXTENSIONS'])
-
-
-# Function to convert text to speech and save as an MP3 file
-
-
-# Limit the text length to approximately fit a 5-minute audio duration
+# Function to limit the text length to approximately fit a 5-minute audio duration
 def limit_text_length(text, max_duration_minutes=5):
     words_per_minute = 150  # Average speaking rate
     max_words = words_per_minute * max_duration_minutes
     return ' '.join(text.split()[:max_words])
-
-
-client = MongoClient("mongodb://localhost:27017/")
 
 
 # Route to render the home page
@@ -63,9 +52,8 @@ client = MongoClient("mongodb://localhost:27017/")
 def home():
     return render_template('index.html')
 
+
 # Route to handle file upload and conversion
-
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -111,7 +99,6 @@ def upload_file():
 
                 # Flash success message and render the upload template with the path to the speech file
                 flash(f'"{filename}" successfully uploaded', 'success')
-
                 return render_template('upload.html', speech_file=speech_file)
 
             except Exception as e:

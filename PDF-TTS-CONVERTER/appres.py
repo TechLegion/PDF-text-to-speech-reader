@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
-from pymongo import MongoClient
+from flask import Flask, render_template, request, redirect, flash, session
 from werkzeug.utils import secure_filename
 import os
 from gtts import gTTS
@@ -41,13 +40,11 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-# Function to convert text to speech and save as an MP3 file
-def text_to_speech(text, output_file):
-    tts = gTTS(text=text, lang='en')
-    tts.save(output_file)
-
-
-client = MongoClient("mongodb://localhost:27017/")
+# Function to limit the text length to approximately fit a 5-minute audio duration if needed
+# def limit_text_length(text, max_duration_minutes=5):
+#    words_per_minute = 150  # Average speaking rate
+#    max_words = words_per_minute * max_duration_minutes
+#    return ' '.join(text.split()[:max_words])
 
 
 # Route to render the home page
@@ -60,6 +57,12 @@ def home():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        # Clear previous flash messages
+        session.pop('_flashes', None)
+
+        flash('Processing your file...', 'info')
+
+        voice = request.form['voice']
         # Check if the post request has the file part
         if 'pdf' not in request.files:
             flash('No file part, please select a PDF file.', 'error')
@@ -86,16 +89,22 @@ def upload_file():
                 speech_file_path = os.path.join('static', 'mp3files', speech_file)
                 print(f"Mp3 file {speech_file} saved in static/mp3files folder")
 
-                # Extract text from the PDF and convert it to speech
+                # Extract text from the PDF
                 text = extract_text_from_pdf(file_path)
-                text_to_speech(text, speech_file_path)
+                # Limit the text length to fit the desired audio duration if needed
+                # limited_text = limit_text_length(text)
+
+                # Convert limited text to speech
+                tts = gTTS(text=text, lang=voice)
+                tts.save(speech_file_path)
+
                 print("This is the speech file path " + speech_file_path)
-                print(f"This is what you have in url_for on upload.html 'static/mp3files/{speech_file_path.split('/')[-1]}")
+                print(
+                    f"This is what you have in url_for on upload.html 'static/mp3files/{speech_file_path.split('/')[-1]}")
                 print("Text extracted and converted to speech")
 
                 # Flash success message and render the upload template with the path to the speech file
-                flash(f'File "{filename}" successfully uploaded and converted to "{speech_file}".', 'success')
-
+                flash(f'"{filename}" successfully uploaded', 'success')
                 return render_template('upload.html', speech_file=speech_file)
 
             except Exception as e:
@@ -105,7 +114,7 @@ def upload_file():
 
         else:
             # Flash error message if the file type is not allowed
-            flash('Please select an acceptable file type (.pdf).', 'error')
+            flash('Please select the acceptable file type (.pdf). You selected a wrong file format', 'error')
             return redirect(request.url)
 
     return render_template('upload.html')
