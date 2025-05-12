@@ -1,32 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Upload PDF Document{% endblock %}
-{% block align_p %} text-align: left; {% endblock %}
-
+{% block title %}Privacy Policy | PDF TTS{% endblock %}
 
 {% block content %}
-    <!-- upload form or content here -->
-<h1>Privacy Policy</h1>
-    <p>We are committed to protecting your privacy. This Privacy Policy outlines the types of information we collect and how we use, disclose, and safeguard your information when you use our PDF to Text Speech Converter.</p>
+<div class="vibrant-section mb-4 text-center">
+  <h1 class="mb-2">Privacy Policy</h1>
+  <p class="lead mb-0">Your privacy matters. Here's how we handle your data at PDF to Speech Converter.</p>
+</div>
 
-    <h2>1. Information We Collect</h2>
-    <p>We may collect personal information that you provide to us when you use our service, such as your name, email address, and any other information you choose to provide. We also collect non-personal information, such as usage data and analytics, to improve our service.</p>
+<div class="saas-card mx-auto" style="max-width: 700px;">
+  <h2 class="mb-3">What We Collect</h2>
+  <ul class="list-unstyled mb-4">
+    <li><strong>PDF Files:</strong> Only the files you upload for conversion. These are stored temporarily for processing and audio generation.</li>
+    <li><strong>Contact Info:</strong> If you use our contact form, we collect your name, email, and message so we can respond to you.</li>
+    <li><strong>Usage Data:</strong> We may collect anonymous usage data to improve our service (e.g., analytics).</li>
+  </ul>
 
-    <h2>2. Use of Information</h2>
-    <p>We use the information we collect to provide, maintain, and improve our services, to communicate with you, and to protect our users. We do not sell or share your personal information with third parties for their marketing purposes.</p>
+  <h2 class="mb-3">How We Use Your Data</h2>
+  <ul class="list-unstyled mb-4">
+    <li>To convert your PDFs to audio and deliver the result to you.</li>
+    <li>To respond to your questions or feedback.</li>
+    <li>To improve and secure our platform.</li>
+  </ul>
 
-    <h2>3. Data Security</h2>
-    <p>We implement appropriate security measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no method of transmission over the internet or electronic storage is completely secure, and we cannot guarantee absolute security.</p>
+  <h2 class="mb-3">Your Privacy, Your Control</h2>
+  <ul class="list-unstyled mb-4">
+    <li>We <strong>never</strong> sell your data or use it for advertising.</li>
+    <li>Your uploaded files are not shared with third parties and are deleted after processing.</li>
+    <li>You can contact us anytime to ask about your data or request deletion.</li>
+  </ul>
 
-    <h2>4. Cookies and Tracking Technologies</h2>
-    <p>We use cookies and similar tracking technologies to track the activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some parts of our service.</p>
+  <h2 class="mb-3">Security</h2>
+  <p>We use industry-standard security measures to protect your data. However, no system is 100% secure. Please avoid uploading sensitive or confidential documents.</p>
 
-    <h2>5. Changes to This Privacy Policy</h2>
-    <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
+  <h2 class="mb-3">Cookies</h2>
+  <p>We may use cookies to enhance your experience. You can disable cookies in your browser settings, but some features may not work as intended.</p>
 
-    <h2>6. Contact Us</h2>
-    <p>If you have any questions about this Privacy Policy, please contact us through our <a href="/contact">Contact</a> page.</p>
+  <h2 class="mb-3">Policy Updates</h2>
+  <p>We may update this policy as our service evolves. Changes will be posted here. Please check back for updates.</p>
 
+  <h2 class="mb-3">Contact</h2>
+  <p>Questions? Reach out via our <a href="/contact">Contact</a> page. We're here to help!</p>
+</div>
 {% endblock %}
 
 

@@ -1,22 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}About{% endblock %}
-{% block align_p %} text-align: left; {% endblock %}
+{% block title %}About | PDF TTS{% endblock %}
 
 {% block content %}
-    <!-- upload form or content here -->
- <h1>About This Project</h1>
-    <p>This project, <strong>PDF to Text Speech Converter</strong>, is developed by <strong>TechLegion</strong>. The primary aim of this project is to create a tool that converts PDF documents into spoken text, enhancing accessibility and usability for individuals with visual impairments or those who prefer auditory learning.</p>
-    <p>This tool leverages advanced text-to-speech technology to provide a seamless and user-friendly experience for converting written content into natural-sounding speech.</p>
-    <p>Key features of this project include:</p>
-    <ul>
-        <li>Easy-to-use interface for uploading and managing PDF files.</li>
-        <li>High-quality text-to-speech conversion with adjustable speech parameters.</li>
-        <li>Support for multiple languages and accents.</li>
-        <li>Downloadable audio files for offline use.</li>
-    </ul>
-    <p>The development of this project involved extensive research and implementation of various software engineering principles, ensuring a robust and scalable solution. We hope this tool serves as a valuable resource for those in need of text-to-speech conversion capabilities.</p>
-    <p>For more information or to provide feedback, please visit our <a href="/contact">Contact</a> page.</p>
+<div class="vibrant-section mb-4 text-center">
+  <h1 class="mb-2">About PDF to Speech Converter</h1>
+  <p class="lead mb-0">Empowering accessibility and productivity for everyone, everywhere.</p>
+</div>
 
+<div class="saas-card mx-auto" style="max-width: 700px;">
+  <h2 class="mb-3">Our Mission</h2>
+  <p>PDF to Speech Converter was created by <strong>TechLegion</strong> to make information more accessible and usable for all. Whether you have visual impairments, prefer listening, or just want to multitask, our tool is here to help.</p>
 
+  <h2 class="mb-3">What We Offer</h2>
+  <ul class="list-unstyled mb-4">
+    <li><strong>Effortless Upload:</strong> Instantly convert your PDF documents to high-quality audio.</li>
+    <li><strong>Multi-Language Support:</strong> Choose from a variety of languages and accents.</li>
+    <li><strong>OCR Technology:</strong> Even scanned/image-based PDFs are supported with automatic text recognition.</li>
+    <li><strong>Download & Listen:</strong> Play your audio online or download it for offline use.</li>
+    <li><strong>Modern, User-Friendly Design:</strong> Enjoy a seamless, intuitive experience on any device.</li>
+  </ul>
+
+  <h2 class="mb-3">How It Works</h2>
+  <ol class="mb-4">
+    <li>Upload your PDF file.</li>
+    <li>Select your preferred language.</li>
+    <li>Let our system extract and convert the text to speech.</li>
+    <li>Listen online or download your MP3 audio file.</li>
+  </ol>
+
+  <h2 class="mb-3">Why Choose Us?</h2>
+  <ul class="list-unstyled mb-4">
+    <li>Fast, reliable, and secure conversion.</li>
+    <li>No hidden fees or ads.</li>
+    <li>Built with care by TechLegion for real-world accessibility and productivity.</li>
+  </ul>
+
+  <p class="mt-4">Want to get in touch or have suggestions? <a href="/contact">Contact us here</a>.</p>
+</div>
 {% endblock %}
