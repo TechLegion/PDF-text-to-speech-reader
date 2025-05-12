@@ -15,7 +15,7 @@
     <div class="alert alert-success d-none" id="success-message">File uploaded and converted successfully!</div>
     <div class="alert alert-danger d-none" id="error-message"></div>
   </div>
-  <form class="upload-form" method="post" enctype="multipart/form-data" id="upload-form">
+  <form class="upload-form" method="post" enctype="multipart/form-data" id="upload-form" onsubmit="showLoader();">
     <input class="upload-input" type="file" name="pdf" accept=".pdf" required>
     <select class="upload-select" name="voice" required>
       <option value="en-us">English</option>
@@ -48,6 +48,8 @@
     Your browser does not support the audio element.
   </audio>
   <a id="download-link" href="#" class="btn btn-outline-primary btn-sm" download>Download MP3</a>
+  <br>
+  <button class="btn btn-secondary mt-3" id="upload-another-btn" type="button">Upload Another PDF</button>
 </div>
 
 <div class="saas-dummy-section">
@@ -105,14 +107,20 @@ document.addEventListener("DOMContentLoaded", function() {
       {% endfor %}
     {% endif %}
   {% endwith %}
-});
 
-// Intercept form submit to show loader
-const uploadForm = document.getElementById('upload-form');
-if (uploadForm) {
-  uploadForm.addEventListener('submit', function() {
-    showLoader();
-  });
-}
+  // Upload Another PDF button logic
+  const uploadAnotherBtn = document.getElementById('upload-another-btn');
+  if (uploadAnotherBtn) {
+    uploadAnotherBtn.addEventListener('click', function() {
+      document.getElementById('audio-card').classList.add('d-none');
+      document.getElementById('status-card').classList.remove('d-none');
+      document.getElementById('upload-form').reset();
+      document.getElementById('ready-message').classList.remove('d-none');
+      document.getElementById('success-message').classList.add('d-none');
+      document.getElementById('error-message').classList.add('d-none');
+      document.getElementById('processing-message').classList.add('d-none');
+    });
+  }
+});
 </script>
 {% endblock %}
