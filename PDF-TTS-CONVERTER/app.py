@@ -64,11 +64,9 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
-# Function to limit the text length to approximately fit a 5-minute audio duration
-def limit_text_length(text, max_duration_minutes=5):
-    words_per_minute = 150  # Average speaking rate
-    max_words = words_per_minute * max_duration_minutes
-    return ' '.join(text.split()[:max_words])
+# Function to limit the text length to a safe value for TTS
+def limit_text_length(text, max_chars=1200):
+    return text[:max_chars]
 
 
 # Route to render the home page
@@ -118,6 +116,10 @@ def upload_file():
                     flash('No text could be extracted from the PDF. Please try another file.', 'error')
                     return redirect(request.url)
 
+                # Warn if the text was truncated
+                if len(text) > len(limited_text):
+                    flash('Your PDF is large. Only the first 1200 characters will be converted to audio.', 'warning')
+
                 # Convert limited text to speech
                 tts = gTTS(text=limited_text, lang=voice)
                 tts.save(speech_file_path)
@@ -132,7 +134,8 @@ def upload_file():
 
             except Exception as e:
                 # Flash error message in case of any exception
-                flash(f'Error processing file: {e}', 'error')
+                flash('Error processing file: Your PDF may be too large or complex. Please try a smaller file.', 'error')
+                print(f'Error processing file: {e}')
                 return redirect(request.url)
 
         else:
