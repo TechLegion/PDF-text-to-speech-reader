@@ -3,102 +3,116 @@
 {% block title %}Upload PDF Document{% endblock %}
 
 {% block content %}
-    <h1>Upload Your PDF</h1>
-    <p>Choose a PDF file from your device and click "Upload" to convert it to spoken text.</p>
+<div class="vibrant-section mb-4">
+  <h1 class="mb-2">PDF to Speech Converter</h1>
+  <p class="lead mb-0">Convert your PDF documents to high-quality audio in seconds. Fast, easy, and accessible!</p>
+</div>
 
-    <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="saveFormState()">
-        <input class="upload-input" type="file" name="pdf" accept=".pdf">
-        <select class="upload-select" name="voice">
-        <option value="en-us">English</option>
-        <option value="fr">French </option>
-        <option value="es">Spanish</option>
-        <option value="zh-CN">Mandarin(Chinese)</option>
-        <option value="nl">Dutch</option>
-        <option value="pt">Portuguese</option>
-        <option value="ja">Japanese</option>
-        <option value="de">German</option>
-        <option value="ru">Russian</option>
-        <option value="ne">Nepali</option>
-        <option value="ko">Korean</option>
-        <option value="it">Italian</option>
-        <option value="uk">Ukrainian</option>
-        <option value="ar">Arabic</option>
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- Add more voices as needed -->
+<div class="saas-card mx-auto" id="status-card">
+  <div id="status-message" class="mb-3">
+    <div class="alert alert-info" id="ready-message">Ready to upload your PDF!</div>
+    <div class="alert alert-primary d-none" id="processing-message"><span class="spinner-border spinner-border-sm me-2"></span>Processing your file, please wait…</div>
+    <div class="alert alert-success d-none" id="success-message">File uploaded and converted successfully!</div>
+    <div class="alert alert-danger d-none" id="error-message"></div>
+  </div>
+  <form class="upload-form" method="post" enctype="multipart/form-data" id="upload-form">
+    <input class="upload-input" type="file" name="pdf" accept=".pdf" required>
+    <select class="upload-select" name="voice" required>
+      <option value="en-us">English</option>
+      <option value="fr">French </option>
+      <option value="es">Spanish</option>
+      <option value="zh-CN">Mandarin(Chinese)</option>
+      <option value="nl">Dutch</option>
+      <option value="pt">Portuguese</option>
+      <option value="ja">Japanese</option>
+      <option value="de">German</option>
+      <option value="ru">Russian</option>
+      <option value="ne">Nepali</option>
+      <option value="ko">Korean</option>
+      <option value="it">Italian</option>
+      <option value="uk">Ukrainian</option>
+      <option value="ar">Arabic</option>
     </select>
-        <br>
-        <button class="upload-btn" type="submit">Upload</button>
-    </form>
+    <button class="upload-btn" type="submit" id="upload-btn">
+      <span id="upload-btn-text">Upload & Convert</span>
+      <span id="loader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    </button>
+  </form>
+</div>
 
-    <div id="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+<div id="audio-card" class="saas-card mx-auto d-none mt-4 text-center">
+  <h3 class="mb-2"><i class="bi bi-music-note-beamed"></i> Your Audio File</h3>
+  <p class="mb-2" id="audio-filename"></p>
+  <audio id="speechFile" controls class="shadow-sm mb-3" style="width:100%">
+    <source id="audio-source" src="" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <a id="download-link" href="#" class="btn btn-outline-primary btn-sm" download>Download MP3</a>
+</div>
 
-    <div id="result">
-        {% if speech_file %}
-            <audio id="speechFile" controls>
-                <source src="{{ url_for('static', filename='mp3files/' + speech_file)}}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-        {% else %}
-            <p>No speech file available</p>
-        {% endif %}
-    </div>
+<div class="saas-dummy-section">
+  <h2>Coming Soon: PDF Summarization</h2>
+  <p>Get concise summaries of your uploaded PDFs with a single click. Stay tuned!</p>
+</div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Restore file path from sessionStorage if available
-            const speechFilePath = sessionStorage.getItem("speech_file");
-            if (speechFilePath) {
-                const audio = document.getElementById("speechFile");
-                audio.src = speechFilePath;
-                audio.style.display = "block";
-            }
+<div class="saas-dummy-section">
+  <h2>Coming Soon: Share & Collaborate</h2>
+  <p>Share your audio files and collaborate with your team directly from the platform.</p>
+</div>
 
-            // Restore flash message
-            const flashMessage = sessionStorage.getItem("flash_message");
-            const flashClass = sessionStorage.getItem("flash_class");
-            if (flashMessage && flashClass) {
-                const flashDiv = document.createElement("div");
-                flashDiv.className = `alert alert-${flashClass}`;
-                flashDiv.innerText = flashMessage;
-                document.getElementById("flash-messages").appendChild(flashDiv);
-                sessionStorage.removeItem("flash_message");
-                sessionStorage.removeItem("flash_class");
-            }
-        });
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script>
+function showLoader() {
+  document.getElementById('ready-message').classList.add('d-none');
+  document.getElementById('processing-message').classList.remove('d-none');
+  document.getElementById('upload-btn-text').classList.add('d-none');
+  document.getElementById('loader').classList.remove('d-none');
+}
 
-        function saveFormState() {
-            // Placeholder message to indicate processing
-            sessionStorage.setItem("flash_message", "Processing your file...");
-            sessionStorage.setItem("flash_class", "info");
+document.addEventListener("DOMContentLoaded", function() {
+  // Hide all status messages except ready
+  document.getElementById('ready-message').classList.remove('d-none');
+  document.getElementById('processing-message').classList.add('d-none');
+  document.getElementById('success-message').classList.add('d-none');
+  document.getElementById('error-message').classList.add('d-none');
+  document.getElementById('audio-card').classList.add('d-none');
+
+  // If there's a speech file, show the audio card
+  {% if speech_file %}
+    document.getElementById('status-card').classList.add('d-none');
+    document.getElementById('audio-card').classList.remove('d-none');
+    document.getElementById('audio-filename').innerText = "{{ speech_file }}";
+    var audioUrl = "{{ url_for('static', filename='mp3files/' + speech_file) }}";
+    document.getElementById('audio-source').src = audioUrl;
+    document.getElementById('speechFile').load();
+    document.getElementById('download-link').href = audioUrl;
+    document.getElementById('download-link').setAttribute('download', "{{ speech_file }}");
+  {% endif %}
+
+  // Handle flash messages from Flask
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        if ("{{ category }}" === "success") {
+          document.getElementById('success-message').innerText = "{{ message }}";
+          document.getElementById('success-message').classList.remove('d-none');
+        } else {
+          document.getElementById('error-message').innerText = "{{ message }}";
+          document.getElementById('error-message').classList.remove('d-none');
         }
+        document.getElementById('ready-message').classList.add('d-none');
+        document.getElementById('processing-message').classList.add('d-none');
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+});
 
-        // Save the speech file path and flash message if available
-        {% if speech_file %}
-            const speechFilePath = "{{ url_for('static', filename='mp3files/' + speech_file) }}";
-            sessionStorage.setItem("speech_file", speechFilePath);
-            sessionStorage.setItem("flash_class", "success");
-        {% endif %}
-    </script>
+// Intercept form submit to show loader
+const uploadForm = document.getElementById('upload-form');
+if (uploadForm) {
+  uploadForm.addEventListener('submit', function() {
+    showLoader();
+  });
+}
+</script>
 {% endblock %}

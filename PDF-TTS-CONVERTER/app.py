@@ -1,29 +1,53 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, session
 from werkzeug.utils import secure_filename
 import os
 from pymongo import *
 from bson.objectid import ObjectId
 from gtts import gTTS
 import PyPDF2
+from dotenv import load_dotenv
+# OCR imports
+import pytesseract
+from pdf2image import convert_from_path
+from PIL import Image
 
+# Load environment variables from .env file
+load_dotenv()
 
-# Function to extract text from a PDF file
+# Function to extract text from a PDF file, with OCR fallback
 def extract_text_from_pdf(pdf_path):
     text = ""
     try:
         with open(pdf_path, 'rb') as file:
             reader = PyPDF2.PdfReader(file)
             for page_num in range(len(reader.pages)):
-                text += reader.pages[page_num].extract_text()
+                page_text = reader.pages[page_num].extract_text()
+                if page_text:
+                    text += page_text
     except Exception as e:
-        print("Error:", e)
+        print("Error (PyPDF2):", e)
+    # Debug print
+    print(f"Extracted text (PyPDF2): {repr(text[:500])}")
+    # If no text found, try OCR
+    if not text.strip():
+        print("No text found with PyPDF2, attempting OCR fallback...")
+        try:
+            images = convert_from_path(pdf_path)
+            ocr_text = ""
+            for i, image in enumerate(images):
+                ocr_page = pytesseract.image_to_string(image)
+                ocr_text += ocr_page
+            text = ocr_text
+            print(f"Extracted text (OCR): {repr(text[:500])}")
+        except Exception as e:
+            print("Error (OCR fallback):", e)
     return text
 
 
 # Initialize Flask application
 app = Flask(__name__)
 # Set secret key for session management and form handling
-app.secret_key = b"NL[\xdb,\xb1\x80z\x94\xda\xe2\x99'~7\xda\xf8\x83\xc7\t\x15\x15\xf1<"
+app.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key')
 
 client = MongoClient('localhost', 27017)
 db = client.pdf_reader_database
@@ -89,10 +113,15 @@ def upload_file():
                 speech_file_path = os.path.join('static', 'mp3files', speech_file)
                 print(f"Mp3 file {speech_file} saved in static/mp3files folder")
 
-                # Extract text from the PDF
+                # Extract text from the PDF (with debug print and OCR fallback)
                 text = extract_text_from_pdf(file_path)
                 # Limit the text length to fit the desired audio duration
                 limited_text = limit_text_length(text)
+
+                # Prevent empty audio
+                if not limited_text.strip():
+                    flash('No text could be extracted from the PDF. Please try another file.', 'error')
+                    return redirect(request.url)
 
                 # Convert limited text to speech
                 tts = gTTS(text=limited_text, lang=voice)
@@ -129,11 +158,34 @@ def about():
 # Route to handle contact form and render the contact page
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    if request.method == 'POST':
-        # Handle form submission (e.g., save data to database or send email)
-        return redirect("/")
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        message = request.form.get("message")
 
-    return render_template('contact.html')
+        # Store data in session to retain input if an error occurs
+        session["name"] = name
+        session["email"] = email
+        session["message"] = message
+
+        if not name or not email or not message:
+            flash("All fields are required!", "error")
+            return redirect("/contact")  # Redirect to retain form data
+
+        # Process the form (e.g., save to database, send email, etc.)
+        flash("Message sent successfully!", "success")
+
+        # Clear session after successful submission
+        session.pop("name", None)
+        session.pop("email", None)
+        session.pop("message", None)
+
+        return redirect("/contact")
+
+    return render_template("contact.html",
+                           name=session.get("name", ""),
+                           email=session.get("email", ""),
+                           message=session.get("message", ""))
 
 
 # Route to render the terms of service page
