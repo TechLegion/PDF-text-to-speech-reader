@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect, flash, session
 from werkzeug.utils import secure_filename
 import os
-from pymongo import *
-from bson.objectid import ObjectId
 from gtts import gTTS
 import PyPDF2
 from dotenv import load_dotenv
@@ -49,9 +47,6 @@ app = Flask(__name__)
 # Set secret key for session management and form handling
 app.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key')
 
-client = MongoClient('localhost', 27017)
-db = client.pdf_reader_database
-files_uploaded = db.files
 # Configure upload folder and allowed file extensions
 app.config['UPLOAD_FOLDER'] = 'uploaded_files'
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
@@ -133,7 +128,6 @@ def upload_file():
 
                 # Flash success message and render the upload template with the path to the speech file
                 flash(f'"{filename}" successfully uploaded', 'success')
-                files_uploaded.insert_one({'file_name': save_filename})
                 return render_template('upload.html', speech_file=speech_file)
 
             except Exception as e:
